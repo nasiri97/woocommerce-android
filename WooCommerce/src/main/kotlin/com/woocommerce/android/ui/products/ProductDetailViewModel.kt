@@ -393,7 +393,7 @@ class ProductDetailViewModel @AssistedInject constructor(
 
         val isProductUpdated = when (event) {
             is ExitProductDetail -> isProductDetailUpdated || isUploadingImages
-            is ExitImages -> isUploadingImages
+            is ExitImages -> isUploadingImages || hasImageChanges()
             else -> isProductDetailUpdated == true && isProductSubDetailUpdated == true
         }
         if (isProductUpdated == true && event.shouldShowDiscardDialog) {
@@ -407,7 +407,7 @@ class ProductDetailViewModel @AssistedInject constructor(
                         if (event is ExitProductDetail) {
                             triggerEvent(ExitProduct)
                         } else {
-                            triggerEvent(Exit)
+                            triggerEvent(event)
                         }
                     }
             ))
@@ -422,7 +422,7 @@ class ProductDetailViewModel @AssistedInject constructor(
                         if (event is ExitProductDetail) {
                             triggerEvent(ExitProduct)
                         } else {
-                            triggerEvent(Exit)
+                            triggerEvent(event)
                         }
                     }
             ))
@@ -949,13 +949,14 @@ class ProductDetailViewModel @AssistedInject constructor(
      * Adds multiple images to the list of product draft's images
      */
     fun addProductImageListToDraft(imageList: ArrayList<Product.Image>) {
-        // add the existing images to the passed list...
+        // add the existing images to the passed list only
+        // if it does not exist in the list already
         viewState.productDraft?.let {
-            imageList.addAll(it.images)
-        }
+            val updatedImageList = (it.images + imageList).distinct().toList()
 
-        // ...then update the draft's images  with the combined list
-        updateProductDraft(images = imageList)
+            // ...then update the draft's images  with the combined list
+            updateProductDraft(images = updatedImageList)
+        }
     }
 
     /**
